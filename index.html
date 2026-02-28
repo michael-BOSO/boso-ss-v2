@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BOSO SS v2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      font-size: 22px;
+      padding: 18px;
+      margin: 10px;
+      width: 120px;
+      border-radius: 12px;
+      border: none;
+      color: white;
+    }
+    .player { background: #1e88e5; }
+    .banker { background: #e53935; }
+    .tie { background: #43a047; }
+    .panel {
+      margin-top: 30px;
+      padding: 20px;
+      background: #222;
+      border-radius: 12px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>BOSO SS + Gap (BUILD-004)</h1>
+
+<button class="player" onclick="record('P')">Player</button>
+<button class="banker" onclick="record('B')">Banker</button>
+<button class="tie" onclick="record('T')">Tie</button>
+
+<div class="panel">
+  <p>Dominant Side: <strong id="ds">-</strong></p>
+  <p>Gap: <strong id="gap">0</strong></p>
+  <p>Switch Count (SC): <strong id="sc">0</strong></p>
+  <p>Next Bet: <strong id="nextBet">-</strong></p>
+</div>
+
+<script>
+let hands = [];
+let ds = null;
+let sc = 0;
+
+function record(result) {
+
+  if(result === 'T') return;
+
+  hands.push(result);
+
+  let p = hands.filter(x => x === 'P').length;
+  let b = hands.filter(x => x === 'B').length;
+
+  // Establish DS = first to 6
+  if(!ds) {
+    if(p >= 6) ds = 'P';
+    if(b >= 6) ds = 'B';
+  }
+
+  let gap = 0;
+
+  if(ds) {
+
+    gap = (ds === 'P') ? (p - b) : (b - p);
+
+    // SC activates at Gap >= +4
+    if(gap >= 4) {
+      if(result !== ds) {
+        sc -= 1;
+      } else {
+        sc = Math.min(sc + 1, 0);
+      }
+    }
+
+    // SC -6 compression trigger
+    let nextBet;
+    if(sc <= -6) {
+      nextBet = (ds === 'P') ? 'Banker' : 'Player';
+    } else {
+      nextBet = (ds === 'P') ? 'Player' : 'Banker';
+    }
+
+    document.getElementById("nextBet").innerText = nextBet;
+  }
+
+  document.getElementById("ds").innerText = ds ? ds : "-";
+  document.getElementById("gap").innerText = gap;
+  document.getElementById("sc").innerText = sc;
+}
+</script>
+
+</body>
+</html>
